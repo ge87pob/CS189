@@ -41,13 +41,9 @@ def compute_data_matrix(images: np.ndarray, controls: np.ndarray, standardize: b
     """
     # flatten x to n, 2700 array
     n = images.shape[0]
-    images_reshaped = images.reshape(n, -1)
+    X = images.reshape(n, -1)
 
-    if standardize:
-        images_reshaped *= 2/255.0
-        images_reshaped -= 1
-
-    return images_reshaped, controls
+    return X if not standardize else X * (1/255)*2 -1, controls
 
 
 def ridge_regression(X: np.ndarray, Y: np.ndarray, lmbda: float) -> np.ndarray:
@@ -132,39 +128,52 @@ if __name__ == '__main__':
     x_train, y_train, x_test, y_test = load_data()
     print("successfully loaded the training and testing data")
 
+    X, Y = compute_data_matrix(x_train, y_train)
+
     LAMBDA = [0.1, 1.0, 10.0, 100.0, 1000.0]
 
-    # TODO: Your code here!
+
     # visualize 0th, 10th, and 20th images with their corresponding controls
 
-    # a) Visualize data
-    # visualize_data(x_train, y_train)
+    # # a) Visualize data
+    print("\nexcercise a")
+    visualize_data(x_train, y_train)
 
     # b) OLS
-    # X, Y = compute_data_matrix(x_train, y_train)
-    # ordinary_least_squares(X, Y)
+    print("\nexcercise b")
+    X, Y = compute_data_matrix(x_train, y_train)
+
+    try:
+        # Attempt to compute the OLS solution
+        pi_ols = ordinary_least_squares(X, Y)
+        print("OLS solution: ", pi_ols)
+
+    except LA.LinAlgError as e:
+        # Handle the case where the matrix is singular or not invertible
+        print(f"OLS failed due to a matrix inversion error: {e}")
 
     # c) Ridge regression
-
-    """
-        X, Y = compute_data_matrix(x_train, y_train)
-        for i in [0.1, 1.0, 10.0, 100.0, 1000.0]:
-            pi = ridge_regression(X, Y, i)
-            error = measure_error(X, Y, pi)
-            print("Ridge regression with lambda = ", i, " has error = ", error) 
-    """
+    print("\nexcercise c")
+    X, Y = compute_data_matrix(x_train, y_train)
+    for i in [0.1, 1.0, 10.0, 100.0, 1000.0]:
+        pi = ridge_regression(X, Y, i)
+        error = measure_error(X, Y, pi)
+        print("Ridge regression with lambda = ", i, " has error = ", error) 
+   
     
 
     # d) standardize and repeat c)
-    """ X, Y = compute_data_matrix(x_train, y_train, standardize=True)
-        for i in [0.1, 1.0, 10.0, 100.0, 1000.0]:
+    print("\nexcercise d")
+    X, Y = compute_data_matrix(x_train, y_train, standardize=True)
+    for i in [0.1, 1.0, 10.0, 100.0, 1000.0]:
         pi = ridge_regression(X, Y, i)
         error = measure_error(X, Y, pi)
         print("Standardized ridge regression with lambda = ", i, " has error = ", error)  
-     """
+     
 
     # e) evaluate with and without standardization on test data
-    """ X, Y = compute_data_matrix(x_train, y_train)
+    print("\nexcercise e")
+    X, Y = compute_data_matrix(x_train, y_train)
     X_test, Y_test = compute_data_matrix(x_test, y_test)
     for i in [0.1, 1.0, 10.0, 100.0, 1000.0]:
         pi = ridge_regression(X, Y, i)
@@ -178,9 +187,10 @@ if __name__ == '__main__':
         error = measure_error(X_test, Y_test, pi)
         print("Ridge regression (with standardization), lambda = ", i, " has error = ", error)
 
-     """
+     
 
     # f) condition number for lmbda = 100 with and without standardization
+    print("\nexcercise f")
     X, Y = compute_data_matrix(x_train, y_train)
     print("Condition number for lambda = 100: ", compute_condition_number(X, 100))
 
