@@ -101,6 +101,25 @@ Note that the activation function is applied element-wise to a vector input.
 \end{enumerate}
 
 \begin{solution}
+
+\[
+\left[ \frac{\partial L}{\partial Z} \right]_{ij} = \left[ \frac{\partial L}{\partial Y} \right]_{ij} \cdot \left[ \frac{\partial Y}{\partial Z} \right]_{ij}
+\]
+
+\[
+\left[ \frac{\partial Y}{\partial Z} \right]_{ij} = \left( \frac{\partial \sigma_{\text{ReLU}}(Z)}{\partial Z} \right)_{ij} = 
+\begin{cases}
+0, & Z_{ij} \leq 0 \\
+1, & Z_{ij} > 0
+\end{cases}
+\]
+
+\[
+\Rightarrow \frac{\partial L}{\partial Z} = \frac{\partial L}{\partial Y} \cdot 1(Z > 0)
+\]
+
+where \( 1(\cdot) \) is the indicator function.
+
     \begin{lstlisting}[language=Python]
 class ReLU(Activation):
     def __init__(self):
@@ -120,7 +139,7 @@ class ReLU(Activation):
         f(z) as described above applied elementwise to `Z`
         """
         ### YOUR CODE HERE ###
-        return ...
+        return max(0, Z)
 
     def backward(self, Z: np.ndarray, dY: np.ndarray) -> np.ndarray:
         """Backward pass for relu activation.
@@ -136,8 +155,8 @@ class ReLU(Activation):
         gradient of loss w.r.t. input of this layer
         """
         ### YOUR CODE HERE ###
-        return ...
-
+        return dY * (Z > 0)
+        
 	\end{lstlisting}
 
 \end{solution}

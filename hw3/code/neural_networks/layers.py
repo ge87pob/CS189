@@ -108,12 +108,13 @@ class FullyConnected(Layer):
 
         ### BEGIN YOUR CODE ###
 
-        W = self.init_weights(...)
-        b = ...
+        W = self.init_weights(self.n_in, self.n_out)
+        b = np.zeros((1, self.n_out))
 
         self.parameters = OrderedDict({"W": W, "b": b}) # DO NOT CHANGE THE KEYS
-        self.cache: OrderedDict = ...  # cache for backprop
-        self.gradients: OrderedDict = ...  # parameter gradients initialized to zero
+        self.cache = OrderedDict({"X": None, "Z": None})  # cache for backprop
+        self.gradients = OrderedDict({"W": np.zeros_like(W), "b": np.zeros_like(b)})
+         # parameter gradients initialized to zero
                                            # MUST HAVE THE SAME KEYS AS `self.parameters`
 
         ### END YOUR CODE ###
@@ -136,12 +137,20 @@ class FullyConnected(Layer):
             self._init_parameters(X.shape)
 
         ### BEGIN YOUR CODE ###
-        
+
+        W = self.parameters["W"]
+        b = self.parameters["b"]
+
+
         # perform an affine transformation and activation
-        out = ...
+
+        Z = np.dot(X, W) + b
+
+        out = self.activation.forward(Z)
         
         # store information necessary for backprop in `self.cache`
-
+        self.cache["X"] = X
+        self.cache["Z"] = Z
         ### END YOUR CODE ###
 
         return out
@@ -166,15 +175,25 @@ class FullyConnected(Layer):
         ### BEGIN YOUR CODE ###
         
         # unpack the cache
+        X = self.cache["X"]
+        Z = self.cache["Z"]
+        W = self.parameters["W"]
         
         # compute the gradients of the loss w.r.t. all parameters as well as the
         # input of the layer
 
-        dX = ...
+        dLdZ = self.activation.backward(Z, dLdY)
+        
+        dW = np.dot(X.T, dLdZ)
+        db = np.sum(dLdZ, axis=0, keepdims=True)
+        dX = np.dot(dLdZ, W.T)
 
         # store the gradients in `self.gradients`
         # the gradient for self.parameters["W"] should be stored in
         # self.gradients["W"], etc.
+        self.gradients["W"] = dW
+        self.gradients["b"] = db
+
 
         ### END YOUR CODE ###
 
