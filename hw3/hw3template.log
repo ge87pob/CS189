@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.10.5)  1 OCT 2024 17:20
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.10.5)  1 OCT 2024 21:45
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -415,13 +415,13 @@ LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <8> not available
  [1{/usr/local/texlive/2022/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
 
 ] [2] [3] [4] [5]
-[6] [7] [8] [9] [10] (./hw3template.aux)
+[6] [7] [8] [9] [10] [11] (./hw3template.aux)
 Package rerunfilecheck Info: File `hw3template.out' has not changed.
 (rerunfilecheck)             Checksum: B09C5A5B9017287D9961718AAA1CF84D;1810.
  ) 
 Here is how much of TeX's memory you used:
- 12191 strings out of 478268
- 182960 string characters out of 5846347
+ 12192 strings out of 478268
+ 182967 string characters out of 5846347
  808543 words of memory out of 5000000
  30187 multiletter control sequences out of 15000+600000
  473792 words of font info for 46 fonts, out of 8000000 for 9000
@@ -444,10 +444,10 @@ e/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive
 2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt8.pfb></usr/local/texlive/20
 22/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texliv
 e/2022/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb>
-Output written on hw3template.pdf (10 pages, 216642 bytes).
+Output written on hw3template.pdf (11 pages, 220064 bytes).
 PDF statistics:
- 254 PDF objects out of 1000 (max. 8388607)
- 207 compressed objects within 3 object streams
- 76 named destinations out of 1000 (max. 500000)
+ 258 PDF objects out of 1000 (max. 8388607)
+ 210 compressed objects within 3 object streams
+ 77 named destinations out of 1000 (max. 500000)
  97 words of extra memory for PDF output out of 10000 (max. 10000000)
 

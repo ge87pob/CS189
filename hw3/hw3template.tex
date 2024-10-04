@@ -188,7 +188,49 @@ When implementing a new layer, it is important to manually verify correctness of
 \end{enumerate}
 
 \begin{solution}
-    TODO
+    Since Z = XW + 1b,
+	\[
+Z_{kj} = \sum_{i=1}^{n^{(l)}} X_{ki} W_{ij} + b_j
+\]
+
+1. Gradient of loss in regards to W.
+Applying the chain rule:
+\[
+\frac{\delta L}{\delta W} = \frac{\delta L}{\delta Z} \cdot \frac{\delta Z}{\delta W} \]
+\[
+\left[ \frac{\delta L}{\delta W} \right]_{ij} = \sum_{k=1}^{m} \frac{\delta L}{\delta Z_{kj}} \cdot \frac{\delta Z_{kj}}{\delta W_{ij}}
+= \sum_{k=1}^{m} \frac{\delta L}{\delta Z_{kj}} X_{ki} = \sum_{k=1}^{m} X_{ik}^T \frac{\delta L}{\delta Z_{kj}}
+\]
+
+\[
+\implies \frac{\delta L}{\delta W} = X^T \cdot \frac{\delta L}{\delta Z}
+\]
+
+2. Gradient of loss in regards to b.
+Applying the chain rule:
+\[
+\left[ \frac{\delta L}{\delta b} \right]_{1j} = \sum_{k=1}^{m} \frac{\delta L}{\delta Z_{kj}} \cdot \frac{\delta Z_{kj}}{\delta b_j}
+= \sum_{k=1}^{m} \frac{\delta L}{\delta Z_{kj}} \cdot 1_{k}, \quad 1 \in \mathbb{R}^{m}
+\]
+
+\[
+\implies \frac{\delta L}{\delta b} = 1^T \frac{\delta L}{\delta Z}, \quad 1^T \in \mathbb{R}^{1 \times m}
+\]
+
+3. Gradient of loss in regards to X. We know that
+\[
+Z_{ik} = \sum_{j=1}^{n^{(l)}} X_{ij} W_{jk} + b_k
+\]
+Applying the chain rule:
+\[
+\left[ \frac{\delta L}{\delta X} \right]_{ij}  = \frac{\delta L}{\delta Z_{ik}} \cdot \frac{\delta Z_{ik}}{\delta X_{ij}} = \sum_{k=1}^{n^{(l+1)}} \frac{\delta L}{\delta Z_{ik}} \cdot W_{jk} = \sum_{k=1}^{n^{(l+1)}} \frac{\delta L}{\delta Z_{ik}} \cdot W_{kj}^T
+\]
+
+\[
+\implies \frac{\delta L}{\delta X} = \frac{\delta L}{\delta Z} \cdot W^T
+\]
+
+	
 \end{solution}
 
 \newpage
