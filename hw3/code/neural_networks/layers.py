@@ -108,7 +108,7 @@ class FullyConnected(Layer):
 
         ### BEGIN YOUR CODE ###
 
-        W = self.init_weights(self.n_in, self.n_out)
+        W = self.init_weights((self.n_in, self.n_out))
         b = np.zeros((1, self.n_out))
 
         self.parameters = OrderedDict({"W": W, "b": b}) # DO NOT CHANGE THE KEYS

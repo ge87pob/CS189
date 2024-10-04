@@ -194,6 +194,15 @@ class SoftMax(Activation):
         f(z) as described above applied elementwise to `Z`
         """
         ### YOUR CODE HERE ###
+        m = np.max(Z, axis=1, keepdims=True)
+
+        sum_exp = np.sum(np.exp(Z - m), axis=1, keepdims=True)
+
+        return np.exp(Z - m) / sum_exp
+
+
+
+
         return ...
 
     def backward(self, Z: np.ndarray, dY: np.ndarray) -> np.ndarray:
@@ -210,6 +219,7 @@ class SoftMax(Activation):
         gradient of loss w.r.t. input of this layer
         """
         ### YOUR CODE HERE ###
+   
         return ...
 
 

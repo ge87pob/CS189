@@ -269,7 +269,45 @@ You can verify yourself why these two formulations are equivalent mathematically
 \end{enumerate}
 
 \begin{solution}
-    TODO
+    \begin{equation}
+    (J)_{ij} = \frac{\partial \sigma_i}{\partial s_j}, \quad \sigma_i = \frac{e^{s_i - m}}{\sum_{l=1}^k e^{s_l - m}}
+\end{equation}
+
+Using the quotient rule, we get:
+\[
+\frac{d}{ds_j} \left( \frac{u}{v} \right) = \frac{v \frac{du}{ds_j} - u \frac{dv}{ds_j}}{v^2}
+\]
+
+Let \( u = e^{s_i - m} \) and \( v = \sum_{l=1}^k e^{s_l - m} \)
+
+\[
+\frac{\partial u}{\partial s_j} = \begin{cases} 
+    0 & \text{if } i \neq j \\
+    e^{s_i - m} & \text{if } i = j
+\end{cases} = e^{s_j - m} \cdot \delta_{ij} \quad \text{with } \delta_{ij} \text{ being Kronecker delta}
+\]
+
+\[
+\frac{\partial v}{\partial s_j} = e^{s_j - m}
+\]
+
+Plugging the values of the partial derivates into the main equation yields:
+
+\[
+\frac{\partial \sigma_i}{\partial s_j} = \frac{\sum_{l=1}^k e^{s_l - m} \ e^{s_j - m} \delta_{ij} - e^{s_i - m} e^{s_j - m}}{ \left( \sum_{l=1}^k e^{s_l - m} \right)^2}
+\]
+
+\[
+= \frac{e^{s_j - m} \delta_{ij}}{\sum_{l=1}^k e^{s_l - m}} - \frac{e^{s_i - m} e^{s_j - m}}{\left( \sum_{l=1}^k e^{s_l - m} \right)^2}
+\]
+
+\[
+\text{with} \quad  \frac{e^{s_j - m}}{\sum_{l=1}^k e^{s_l - m}} = \sigma_j,
+\]
+
+\[
+= \sigma_j \delta_{ij} - \sigma_i \sigma_j = \sigma_j (\delta_{ij} - \sigma_i)
+\]
 \end{solution}
 
 \newpage
@@ -304,7 +342,31 @@ Then, $y_i$ and $\hat{y}_i$ in the expression above are just the $i$th rows of $
 \end{enumerate}
 
 \begin{solution}
-    TODO
+    
+The cost function \( J \) is given by:
+
+\[
+J = -\frac{1}{m} \left( \sum_{i=1}^m y_i \cdot \ln(\hat{y}_i) \right)
+\]
+
+Using the definition of the dot product, this can be expanded to:
+
+\[
+J = -\frac{1}{m} \left( \sum_{i=1}^m \sum_{j=1}^k y_{ij} \cdot \ln(\hat{y}_{ij}) \right)
+\]
+
+The element-wise gradient of \( J \) with respect to \( \hat{y}_{ij} \) is:
+
+\[
+\left[ \frac{\partial J}{\partial \hat{Y}} \right]_{ij} = -\frac{1}{m} \frac{\partial}{\partial \hat{y}_{ij}} \left( \sum_{i=1}^m \sum_{j=1}^k y_{ij} \cdot \ln(\hat{y}_{ij}) \right) = -\frac{1}{m} \cdot \frac{y_{ij}}{\hat{y}_{ij}}
+\]
+
+Thus, the full gradient can be expressed in matrix form as:
+
+\[
+\frac{\partial J}{\partial \hat{Y}} = -\frac{1}{m} \cdot \frac{Y}{\hat{Y}}, \quad \text{where } \frac{Y}{\hat{Y}} \text{ is element-wise division}
+\]
+
 \end{solution}
 
 \newpage
