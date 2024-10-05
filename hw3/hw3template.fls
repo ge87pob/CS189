@@ -575,10 +575,10 @@ INPUT ./hw3template.out
 INPUT hw3template.out
 INPUT ./hw3template.out
 INPUT hw3template.out
+OUTPUT hw3template.pdf
 INPUT ./hw3template.out
 INPUT ./hw3template.out
 OUTPUT hw3template.out
-OUTPUT hw3template.pdf
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/map/fontname/texfonts.map
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/public/cm/cmr12.tfm
 INPUT /usr/local/texlive/2022/texmf-dist/fonts/tfm/public/cm/cmr12.tfm

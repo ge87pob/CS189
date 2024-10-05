@@ -219,8 +219,9 @@ class SoftMax(Activation):
         gradient of loss w.r.t. input of this layer
         """
         ### YOUR CODE HERE ###
-   
-        return ...
+
+        Y = self.forward(Z)
+        return Y * (dY - np.sum(Y * dY, axis=1, keepdims=True))
 
 
 class ArcTan(Activation):
