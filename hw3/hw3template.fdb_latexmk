@@ -1,6 +1,6 @@
 # Fdb version 3
-["pdflatex"] 1728096019 "/Users/jan61/VSC/CS189/hw3/hw3template.tex" "hw3template.pdf" "hw3template" 1728096020
-  "/Users/jan61/VSC/CS189/hw3/hw3template.tex" 1728096015 23725 bfd6aa3ff87769cf235ddc7ceee82043 ""
+["pdflatex"] 1728163433 "/Users/jan61/VSC/CS189/hw3/hw3template.tex" "hw3template.pdf" "hw3template" 1728163434
+  "/Users/jan61/VSC/CS189/hw3/hw3template.tex" 1728163432 39105 e89016c78480a19fa2e51e83df17528b ""
   "/usr/local/texlive/2022/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2022/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2022/texmf-dist/fonts/tfm/jknappen/ec/tcrm1000.tfm" 1136768653 1536 e07581a4bb3136ece9eeb4c3ffab8233 ""
@@ -97,9 +97,10 @@
   "/usr/local/texlive/2022/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1647878959 4410336 7d30a02e9fa9a16d7d1f8d037ba69641 ""
   "/usr/local/texlive/2022/texmf-var/web2c/pdftex/pdflatex.fmt" 1664981067 2826440 91f9bc84812989b19cedd31ffa9667d9 ""
   "/usr/local/texlive/2022/texmf.cnf" 1647878952 577 209b46be99c9075fd74d4c0369380e8c ""
-  "hw3template.aux" 1728096019 2148 c7c4accf31fc191beb1d9d4a8dfdb951 "pdflatex"
-  "hw3template.out" 1728096019 1810 b09c5a5b9017287d9961718aaa1cf84d "pdflatex"
-  "hw3template.tex" 1728096015 23725 bfd6aa3ff87769cf235ddc7ceee82043 ""
+  "code/experiments/feed_forward_2layers_2-lr0.014_mom0.9_seed0/loss.png" 1728108843 51646 16430a1a4f519549fbdc7c6a75ced1cf ""
+  "hw3template.aux" 1728163434 2471 174d634ff039b3c2d20ad08c12b73b1b "pdflatex"
+  "hw3template.out" 1728163434 1810 b09c5a5b9017287d9961718aaa1cf84d "pdflatex"
+  "hw3template.tex" 1728163432 39105 e89016c78480a19fa2e51e83df17528b ""
   (generated)
   "hw3template.aux"
   "hw3template.log"

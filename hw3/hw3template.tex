@@ -120,7 +120,9 @@ Note that the activation function is applied element-wise to a vector input.
 
 where \( 1(\cdot) \) is the indicator function.
 
-    \begin{lstlisting}[language=Python]
+    Implementation of \texttt{activations.ReLU}:
+
+\begin{lstlisting}[language=Python]
 class ReLU(Activation):
     def __init__(self):
         super().__init__()
@@ -139,7 +141,7 @@ class ReLU(Activation):
         f(z) as described above applied elementwise to `Z`
         """
         ### YOUR CODE HERE ###
-        return max(0, Z)
+        return np.maximum(0, Z)
 
     def backward(self, Z: np.ndarray, dY: np.ndarray) -> np.ndarray:
         """Backward pass for relu activation.
@@ -156,8 +158,8 @@ class ReLU(Activation):
         """
         ### YOUR CODE HERE ###
         return dY * (Z > 0)
-        
-	\end{lstlisting}
+
+\end{lstlisting}
 
 \end{solution}
 
@@ -229,6 +231,125 @@ Applying the chain rule:
 \[
 \implies \frac{\delta L}{\delta X} = \frac{\delta L}{\delta Z} \cdot W^T
 \]
+
+Implementation of \texttt{layers.FullyConnected}:
+
+\begin{lstlisting}[language=Python]
+class FullyConnected(Layer):
+    """A fully-connected layer multiplies its input by a weight matrix, adds
+    a bias, and then applies an activation function.
+    """
+
+    def __init__(
+        self, n_out: int, activation: str, weight_init="xavier_uniform"
+    ) -> None:
+
+        super().__init__()
+        self.n_in = None
+        self.n_out = n_out
+        self.activation = initialize_activation(activation)
+
+        # instantiate the weight initializer
+        self.init_weights = initialize_weights(weight_init, activation=activation)
+
+    def _init_parameters(self, X_shape: Tuple[int, int]) -> None:
+        """Initialize all layer parameters (weights, biases)."""
+        self.n_in = X_shape[1]
+
+        ### BEGIN YOUR CODE ###
+
+        W = self.init_weights((self.n_in, self.n_out))
+        b = np.zeros((1, self.n_out))
+
+        self.parameters = OrderedDict({"W": W, "b": b}) # DO NOT CHANGE THE KEYS
+        self.cache = OrderedDict({"X": None, "Z": None})  # cache for backprop
+        self.gradients = OrderedDict({"W": np.zeros_like(W), "b": np.zeros_like(b)})
+         # parameter gradients initialized to zero
+                                           # MUST HAVE THE SAME KEYS AS `self.parameters`
+
+        ### END YOUR CODE ###
+
+    def forward(self, X: np.ndarray) -> np.ndarray:
+        """Forward pass: multiply by a weight matrix, add a bias, apply activation.
+        Also, store all necessary intermediate results in the `cache` dictionary
+        to be able to compute the backward pass.
+
+        Parameters
+        ----------
+        X  input matrix of shape (batch_size, input_dim)
+
+        Returns
+        -------
+        a matrix of shape (batch_size, output_dim)
+        """
+        # initialize layer parameters if they have not been initialized
+        if self.n_in is None:
+            self._init_parameters(X.shape)
+
+        ### BEGIN YOUR CODE ###
+
+        W = self.parameters["W"]
+        b = self.parameters["b"]
+
+
+        # perform an affine transformation and activation
+
+        Z = np.dot(X, W) + b
+
+        out = self.activation.forward(Z)
+        
+        # store information necessary for backprop in `self.cache`
+        self.cache["X"] = X
+        self.cache["Z"] = Z
+        ### END YOUR CODE ###
+
+        return out
+
+    def backward(self, dLdY: np.ndarray) -> np.ndarray:
+        """Backward pass for fully connected layer.
+        Compute the gradients of the loss with respect to:
+            1. the weights of this layer (mutate the `gradients` dictionary)
+            2. the bias of this layer (mutate the `gradients` dictionary)
+            3. the input of this layer (return this)
+
+        Parameters
+        ----------
+        dLdY  gradient of the loss with respect to the output of this layer
+              shape (batch_size, output_dim)
+
+        Returns
+        -------
+        gradient of the loss with respect to the input of this layer
+        shape (batch_size, input_dim)
+        """
+        ### BEGIN YOUR CODE ###
+        
+        # unpack the cache
+        X = self.cache["X"]
+        Z = self.cache["Z"]
+        W = self.parameters["W"]
+        
+        # compute the gradients of the loss w.r.t. all parameters as well as the
+        # input of the layer
+
+        dLdZ = self.activation.backward(Z, dLdY)
+        
+        dW = np.dot(X.T, dLdZ)
+        db = np.sum(dLdZ, axis=0, keepdims=True)
+        dX = np.dot(dLdZ, W.T)
+
+        # store the gradients in `self.gradients`
+        # the gradient for self.parameters["W"] should be stored in
+        # self.gradients["W"], etc.
+        self.gradients["W"] = dW
+        self.gradients["b"] = db
+
+
+        ### END YOUR CODE ###
+
+        return dX
+
+\end{lstlisting}
 
 	
 \end{solution}
@@ -308,6 +429,95 @@ Plugging the values of the partial derivates into the main equation yields:
 \[
 = \sigma_j \delta_{ij} - \sigma_i \sigma_j = \sigma_j (\delta_{ij} - \sigma_i)
 \]
+
+Vectorized solution:
+
+
+\[
+\left[ \frac{\delta L}{\delta z} \right]_i = \sum_{j=1}^k \frac{\delta L}{\delta y_j} \cdot \frac{\delta y_j}{\delta z_i}
+\]
+
+\[
+\frac{\delta L}{\delta y_j} = d y_j
+\]
+
+\[
+\frac{\delta y_j}{\delta z_i} = \frac{\delta \sigma_j}{\delta z_i} = \sigma_i (1 - \sigma_i) \quad \text{if } i = j
+\]
+
+\[
+\frac{\delta y_j}{\delta z_i} = \frac{\delta \sigma_j}{\delta z_i} = -\sigma_i \sigma_j \quad \text{if } i \neq j
+\]
+
+\[
+\text{In each row, the sum of } \frac{\delta y_j}{\delta z_i} \text{ has to equal } \sigma_i + \sum_{j=1}^k -\sigma_i \sigma_j, \text{ +1 for the one position where } i = j
+\]
+
+\[
+\left[ \frac{\delta L}{\delta z} \right]_i = \sum_{j=1, j \neq i}^k - d y_j \cdot \sigma_j \sigma_i + (d y_i \cdot \sigma_i - d y_i \cdot \sigma_i \sigma_i)
+\]
+
+\[
+= -\sum_{j=1, j \neq i}^k d y_j \cdot \sigma_j \sigma_i + d y_i \cdot \sigma_i
+\]
+
+\[
+= \sigma_i \left( d y_i - \sum_{j=1}^k d y_j \sigma_j \right)
+\]
+
+\[
+= y_i \left( d y_i - \sum_{j=1}^k d y_j y_j \right)
+\]
+
+
+Implementation of \texttt{activations.SoftMax}:
+
+\begin{lstlisting}[language=Python]
+class SoftMax(Activation):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, Z: np.ndarray) -> np.ndarray:
+        """Forward pass for softmax activation.
+        Hint: The naive implementation might not be numerically stable.
+        
+        Parameters
+        ----------
+        Z  input pre-activations (any shape)
+
+        Returns
+        -------
+        f(z) as described above applied elementwise to `Z`
+        """
+        ### YOUR CODE HERE ###
+        m = np.max(Z, axis=1, keepdims=True)
+
+        sum_exp = np.sum(np.exp(Z - m), axis=1, keepdims=True)
+
+        return np.exp(Z - m) / sum_exp
+
+    def backward(self, Z: np.ndarray, dY: np.ndarray) -> np.ndarray:
+        """Backward pass for softmax activation.
+        
+        Parameters
+        ----------
+        Z   input to `forward` method
+        dY  gradient of loss w.r.t. the output of this layer
+            same shape as `Z`
+
+        Returns
+        -------
+        gradient of loss w.r.t. input of this layer
+        """
+        ### YOUR CODE HERE ###
+
+        Y = self.forward(Z)
+        return Y * (dY - np.sum(Y * dY, axis=1, keepdims=True))
+
+\end{lstlisting}
+
+
+
 \end{solution}
 
 \newpage
@@ -367,6 +577,56 @@ Thus, the full gradient can be expressed in matrix form as:
 \frac{\partial J}{\partial \hat{Y}} = -\frac{1}{m} \cdot \frac{Y}{\hat{Y}}, \quad \text{where } \frac{Y}{\hat{Y}} \text{ is element-wise division}
 \]
 
+
+Implementation of \texttt{losses.CrossEntropy}:
+
+\begin{lstlisting}[language=Python]
+class CrossEntropy(Loss):
+    """Cross entropy loss function."""
+
+    def __init__(self, name: str) -> None:
+        self.name = name
+
+    def __call__(self, Y: np.ndarray, Y_hat: np.ndarray) -> float:
+        return self.forward(Y, Y_hat)
+
+    def forward(self, Y: np.ndarray, Y_hat: np.ndarray) -> float:
+        """Computes the loss for predictions `Y_hat` given one-hot encoded labels
+        `Y`.
+
+        Parameters
+        ----------
+        Y      one-hot encoded labels of shape (batch_size, num_classes)
+        Y_hat  model predictions in range (0, 1) of shape (batch_size, num_classes)
+
+        Returns
+        -------
+        a single float representing the loss
+        """
+        ### YOUR CODE HERE ###
+        m = Y.shape[0]
+        return -1/m * np.sum(Y * np.log(Y_hat))
+
+    def backward(self, Y: np.ndarray, Y_hat: np.ndarray) -> np.ndarray:
+        """Backward pass of cross-entropy loss.
+        NOTE: This is correct ONLY when the loss function is SoftMax.
+
+        Parameters
+        ----------
+        Y      one-hot encoded labels of shape (batch_size, num_classes)
+        Y_hat  model predictions in range (0, 1) of shape (batch_size, num_classes)
+
+        Returns
+        -------
+        the gradient of the cross-entropy loss with respect to the vector of
+        predictions, `Y_hat`
+        """
+        ### YOUR CODE HERE ###
+        m = Y.shape[0]
+        return -1/m * (Y / Y_hat)
+
+\end{lstlisting}
+
 \end{solution}
 
 \newpage
@@ -414,7 +674,150 @@ You will use the Iris Dataset, which contains 4 features for 3 different classes
 \end{enumerate}
 
 \begin{solution}
-   
+
+\textbf{PART 1}
+
+Implementation of \texttt{models.NeuralNetwork.forward}:
+
+\begin{lstlisting}[language=Python]
+    def forward(self, X: np.ndarray) -> np.ndarray:
+        """One forward pass through all the layers of the neural network.
+
+        Parameters
+        ----------
+        X  design matrix whose must match the input shape required by the
+           first layer
+
+        Returns
+        -------
+        forward pass output, matches the shape of the output of the last layer
+        """
+        ### YOUR CODE HERE ###
+        # Iterate through the network's layers.
+        for layer in self.layers:
+            X = layer.forward(X)
+
+        return X
+
+\end{lstlisting}
+
+Implementation of \texttt{models.NeuralNetwork.backward}:
+
+\begin{lstlisting}[language=Python]
+    def backward(self, target: np.ndarray, out: np.ndarray) -> float:
+        """One backward pass through all the layers of the neural network.
+        During this phase we calculate the gradients of the loss with respect to
+        each of the parameters of the entire neural network. Most of the heavy
+        lifting is done by the `backward` methods of the layers, so this method
+        should be relatively simple. Also make sure to compute the loss in this
+        method and NOT in `self.forward`.
+
+        Note: Both input arrays have the same shape.
+
+        Parameters
+        ----------
+        target  the targets we are trying to fit to (e.g., training labels)
+        out     the predictions of the model on training data
+
+        Returns
+        -------
+        the loss of the model given the training inputs and targets
+        """
+        ### YOUR CODE HERE ###
+        # Compute the loss.
+        # Backpropagate through the network's layers.
+
+        L = self.loss.forward(target, out)
+        dLdY = self.loss.backward(target, out)
+        for layer in reversed(self.layers):
+            dLdY = layer.backward(dLdY)
+
+        return L 
+
+\end{lstlisting}
+
+Implementation of \texttt{models.NeuralNetwork.predict}:
+
+\begin{lstlisting}[language=Python]
+    def predict(self, X: np.ndarray, Y: np.ndarray) -> Tuple[np.ndarray, float]:
+        """Make a forward and backward pass to calculate the predictions and
+        loss of the neural network on the given data.
+
+        Parameters
+        ----------
+        X  input features
+        Y  targets (same length as `X`)
+
+        Returns
+        -------
+        a tuple of the prediction and loss
+        """
+        ### YOUR CODE HERE ###
+        # Do a forward pass. Maybe use a function you already wrote?
+        # Get the loss. Remember that the `backward` function returns the loss.
+        Y_hat = self.forward(X)
+        L = self.backward(Y, Y_hat)
+        return Y_hat, L
+
+\end{lstlisting}
+
+
+\textbf{PART 2}
+
+I first tried various hidden layer sizes (25, 50, 10, 5, 3, 2) while keeping learning rate constant (0.01)
+
+	\begin{enumerate}
+	
+    \item Iteration (n\_out = 25, LR = 0.01): Epoch 99 Training Loss: 0.0846, Training Accuracy: 0.952, Validation Loss: 0.0201, Validation Accuracy: 1.0, Test Loss: 0.3021, Test Accuracy: 0.88
+
+    \item Iteration (n\_out = 50, LR = 0.01): Epoch 99 Training Loss: 0.0541, Training Accuracy: 0.984, Validation Loss: 0.0447, Validation Accuracy: 1.0, Test Loss: 0.2547, Test Accuracy: 0.88
+    
+    \item Iteration (n\_out = 10, LR = 0.01): Epoch 99 Training Loss: 0.0653 Training Accuracy: 0.976 Val Loss: 0.0111 Val Accuracy: 1.0, Test Loss: 0.1349 Test Accuracy: 0.96
+    
+    \item Iteration (n\_out = 5, LR = 0.01): Epoch 99 Training Loss: 0.1127 Training Accuracy: 0.92 Val Loss: 0.056 Val Accuracy: 1.0
+Test Loss: 0.067 Test Accuracy: 0.96
+
+  \item Iteration (n\_out = 3, LR = 0.01): Epoch 99 Training Loss: 0.1911 Training Accuracy: 0.968 Val Loss: 0.1197 Val Accuracy: 1.0 Test Loss: 0.2112 Test Accuracy: 0.98
+  
+  \item Iteration (n\_out = 2, LR = 0.01): Epoch 99 Training Loss: 0.1925 Training Accuracy: 0.976 Val Loss: 0.1065 Val Accuracy: 1.0
+Test Loss: 0.1941 Test Accuracy: 0.98
+
+\item Iteration (n\_out = 1, LR = 0.01): Epoch 99 Training Loss: 1.1014 Training Accuracy: 0.352 Val Loss: 1.1311 Val Accuracy: 0.2
+Test Loss: 1.0927 Test Accuracy: 0.46
+
+
+It was very surprising that fewer hidden layers lead to higher test accuracy - intuitively, one would think different. Setting hidden layer size to 1, however, makes the model a lot worse.
+
+Next, I tried varying the learning rate and applying it to different hidden layer numbers:
+
+  
+    \item Iteration (n\_out = 3, LR = 0.1): Epoch 99 Training Loss: 1.1168 Training Accuracy: 0.384 Val Loss: 1.2223 Val Accuracy: 0.2
+Test Loss: 1.1255 Test Accuracy: 0.46
+  
+   \item Iteration (n\_out = 50, LR = 0.1): Epoch 99 Training Loss: 0.0671 Training Accuracy: 0.968 Val Loss: 0.0827 Val Accuracy: 0.9333
+Test Loss: 0.1802 Test Accuracy: 0.9
+
+
+\item Iteration (n\_out = 2, LR = 0.005): Epoch 99 Training Loss: 0.375 Training Accuracy: 0.976 Val Loss: 0.2427 Val Accuracy: 1.0
+Test Loss: 0.3714 Test Accuracy: 0.98
+
+The higher learning rate made the model with 3 hidden layers drastically worse, while the model with 50 hidden layers also got worse (although not that big of a difference compared to the other model)
+
+After a few more iterations (which I am not going to explicitely show here), my final model that performed the best was with 2 hidden layers and a learning rate = 0.014. It achieved a test accuracy of 0.98 while having a test loss of 0.1705.
+
+\item Iteration (n\_out = 2, LR = 0.014): Epoch 99 Training Loss: 0.1609 Training Accuracy: 0.928 Val Loss: 0.0758 Val Accuracy: 1.0
+Test Loss: 0.1705 Test Accuracy: 0.98
+
+\begin{figure}[h] 
+    \centering
+    \includegraphics[width=0.5\textwidth]{{./code/experiments/feed_forward_2layers_2-lr0.014_mom0.9_seed0/loss}} 
+    \caption{Training and validation loss for hidden layer size = 2 and learning rate = 0.014}
+    \label{fig:lossplot}
+\end{figure}
+    
+
+\end{enumerate}
+
 \end{solution}
 
 \newpage
@@ -447,7 +850,55 @@ In this problem, you will only derive the gradients for the convolutional and po
 \end{enumerate}
 
 \begin{solution}
-    TODO
+1.
+   \[
+\text{(a)} \quad \frac{\partial L}{\partial b[f]} = \sum_{d_1, d_2} \frac{\partial L}{\partial Z[d_1, d_2, f]} \cdot \frac{\partial Z[d_1, d_2, f]}{\partial b[f]} = \sum_{d_1, d_2} \frac{\partial L}{\partial Z[d_1, d_2, f]}
+\]
+
+\[
+\text{where} \quad \frac{\partial Z[d_1, d_2, f]}{\partial b[f]} = 1 \quad \text{for arbitrary } f \in [1, \dots, n]
+\]
+    
+    
+\[
+\text{(b)} \quad \frac{\partial L}{\partial W[i, k, c, f]} = \sum_{d_1, d_2} \frac{\partial L}{\partial Z[d_1, d_2, f]} \cdot \frac{\partial Z[d_1, d_2, f]}{\partial W[i, k, c, f]}
+\]
+
+\[
+\frac{\partial Z[d_1, d_2, f]}{\partial W[i, k, c, f]} = X[d_1 + i, d_2 + k, c]
+\]
+
+\[
+\Rightarrow \quad \frac{\partial L}{\partial W[i, k, c, f]} = \sum_{d_1, d_2} \frac{\partial L}{\partial Z[d_1, d_2, f]} \cdot X[d_1 + i, d_2 + k, c]
+\]
+    
+ \[
+\text{(c)} \quad \frac{\partial L}{\partial X[x, y, c]} = \sum_{d_1, d_2, n} \frac{\partial L}{\partial Z[d_1, d_2, n]} \cdot \frac{\partial Z[d_1, d_2, n]}{\partial X[x, y, c]}
+\]
+
+\[
+x = d_1 + i \quad y = d_2 + j \quad c = c
+\]
+
+\[
+d_1 = x - i \quad d_2 = y - j \quad i = x - d_1 \quad j = y - d_2
+\]
+
+\[
+\frac{\partial Z[d_1, d_2, n]}{\partial X[x, y, c]} = W[x - d_1, y - d_2, c, n]
+\]
+
+\[
+\Rightarrow \quad \frac{\partial L}{\partial X[x, y, c]} = \sum_{d_1, d_2, n} \frac{\partial L}{\partial Z[d_1, d_2, n]} \cdot W[x - d_1, y - d_2, c, n]
+\]
+
+2.
+
+Average Pooling: Forward pass computes the average value of the input and it on. In the backward pass, the gradient fof loss regarding the input is calculated by taking gradient of loss regarding the output and equally distributing it, i.e. dividing by number of inputs, to all the input positions equally. 
+
+Max pooling: Forward pass records the position of the maximum value in each pooling window, and in the backward pass, the gradient of the loss regarding the input is equal to gradient of loss regarding output, only for the input with max value in the window, and will be 0 otherwise.
+
+
 \end{solution}
 
 \newpage
@@ -503,7 +954,7 @@ If you have access to your own GPUs, feel free to run the notebook locally on yo
     \textbf{List all collaborators. If you worked alone, then you must explicitly state so.}
 
     \begin{solution}
-        TODO
+        1. Adil Köken
     \end{solution}
 
     \item
@@ -518,9 +969,6 @@ If you have access to your own GPUs, feel free to run the notebook locally on yo
     readings, including figures and pictures) should be cited properly.
     We wish to remind you that the consequences of academic misconduct are \emph{particularly severe}!
 
-    \begin{solution}
-        TODO
-    \end{solution}
 
 \end{enumerate}
 

@@ -200,11 +200,6 @@ class SoftMax(Activation):
 
         return np.exp(Z - m) / sum_exp
 
-
-
-
-        return ...
-
     def backward(self, Z: np.ndarray, dY: np.ndarray) -> np.ndarray:
         """Backward pass for softmax activation.
         
